@@ -8,14 +8,21 @@
   const hint = document.getElementById('hint');
   const countdownEl = document.getElementById('countdown');
   const muteBtn = document.getElementById('mute-btn');
+  const glassOverlay = document.getElementById('glass-overlay');
+  const birthdayAudioBtn = document.getElementById('glass-birthday-btn');
+  const madridAduioBtn = document.getElementById('glass-madrid-btn');
+  const glassRestartBtn = document.getElementById('glass-restart-btn');
 
   // ---- Audio ----
-  // Replace these paths with your real audio files.
-  // MP3 for BGM (best compatibility for longer/looped audio).
-  // WAV for short SFX (zero decode latency vs mp3/ogg — snappier response).
-  const bgm = new Audio('assets/audio/bgm-theme.mp3');
-  bgm.loop = true;
-  bgm.volume = 0.4;
+  const mainBgm = new Audio('assets/audio/bgm-theme.mp3');
+  mainBgm.loop = true;
+  mainBgm.volume = 0.4;
+
+  const birthdayBGM = new Audio('assets/audio/birthday-france.mp3');
+  birthdayBGM.volume = 0.5;
+
+  const madridBGM = new Audio('assets/audio/madrid-anthem.mp3');
+  madridBGM.volume = 0.5;
 
   const jumpSfx = new Audio('assets/audio/jump.wav');
   jumpSfx.volume = 0.7;
@@ -26,36 +33,53 @@
   const MUTE_KEY = 'runner_muted';
   let muted = false;
   try { muted = localStorage.getItem(MUTE_KEY) === '1'; } catch(e) { muted = false; }
-  bgm.muted = muted;
+  mainBgm.muted = muted;
   jumpSfx.muted = muted;
   updateMuteBtn();
 
   function updateMuteBtn() {
     muteBtn.textContent = muted ? '🔇' : '🔊';
     muteBtn.classList.toggle('muted', muted);
+    birthdayAudioBtn.textContent = muted ? '🔇' : '🔊';
   }
 
   function toggleMute() {
     muted = !muted;
-    bgm.muted = muted;
+    mainBgm.muted = muted;
     jumpSfx.muted = muted;
     try { localStorage.setItem(MUTE_KEY, muted ? '1' : '0'); } catch(e) {}
     updateMuteBtn();
   }
+
   muteBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     toggleMute();
   });
 
+  birthdayAudioBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    birthdayBGM.currentTime = 0;
+    birthdayBGM.play().catch(() => {});
+  });
+
+  madridAduioBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    madridBGM.currentTime = 0;
+    madridBGM.play().catch(() => {});
+  });
+
+  glassRestartBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    glassOverlay.style.display = 'none';
+    beginCountdown();
+  });
+
   let bgmStarted = false;
   function startBgm() {
     if (bgmStarted) return;
-
     bgmStarted = true;
-    bgm.currentTime = 0;
-    bgm.play().catch(() => {
-      // Autoplay was blocked (rare once inside a gesture handler) — ignore.
-    });
+    mainBgm.currentTime = 0;
+    mainBgm.play().catch(() => {});
   }
 
   function playJumpSfx() {
@@ -247,6 +271,7 @@
     startBgm();
     reset();
     draw();
+    glassOverlay.style.display = 'none';
     startBtn.style.display = 'none';
     overlay.querySelector('p').style.display = 'none';
     countdownEl.style.display = 'block';
@@ -274,15 +299,28 @@
     requestAnimationFrame(loop);
   }
 
+  let gameOverCount = 0;
   function gameOver() {
     state = STATE.DEAD;
-    bgm.pause();
+    mainBgm.pause();
     bgmStarted = false;
     if (score > best) {
       best = score;
       try { localStorage.setItem(BEST_KEY, String(best)); } catch(e) {}
     }
     bestEl.textContent = 'BEST ' + best;
+    gameOverCount += 1;
+
+    if (gameOverCount >= 3) {
+      // Show the glass panel instead of the normal retry overlay.
+      overlay.style.display = 'none';
+      const finalScore = Math.floor(score);
+      document.getElementById('glass-sub').textContent =
+        gameOverCount + ' tries down — score ' + finalScore + '. Vibe to the music or jump back in.';
+      glassOverlay.style.display = 'flex';
+      return;
+    }
+
     overlay.querySelector('h1').textContent = 'GAME OVER';
     overlay.querySelector('p').style.display = 'none';
     let scoreLine = overlay.querySelector('.score-line');
