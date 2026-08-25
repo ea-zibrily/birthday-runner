@@ -30,6 +30,9 @@
   const breakSfx = new Audio('assets/audio/break.wav');
   breakSfx.volume = 0.7;
 
+  const gameOverSfx = new Audio('assets/audio/game-over.wav');
+  gameOverSfx.volume = 0.7;
+
   const MUTE_KEY = 'runner_muted';
   let muted = false;
   try { muted = localStorage.getItem(MUTE_KEY) === '1'; } catch(e) { muted = false; }
@@ -79,21 +82,26 @@
     if (bgmStarted) return;
     bgmStarted = true;
     mainBgm.currentTime = 0;
-    mainBgm.play().catch(() => {});
+    mainBgm.play();
   }
 
   function playJumpSfx() {
     const sfx = jumpSfx.cloneNode();
     sfx.volume = jumpSfx.volume;
     sfx.muted = muted;
-    sfx.play().catch(() => {});
+    sfx.play();
   }
 
   function playBreakSfx() {
     const sfx = breakSfx.cloneNode();
     sfx.volume = breakSfx.volume;
     sfx.muted = muted;
-    sfx.play().catch(() => {});
+    sfx.play();
+  }
+
+  function playGameOverSfx() {
+    gameOverSfx.currentTime = 0;
+    gameOverSfx.play();
   }
 
   // ---- Canvas sizing ----
@@ -129,7 +137,7 @@
   let speed = 0;
   let elapsed = 0;
   let lastTime = 0;
-  const baseSpeed = 3;
+  const baseSpeed = 5;
 
   // player
   const player = {
@@ -311,7 +319,8 @@
     bestEl.textContent = 'SEKOR: ' + best;
     gameOverCount += 1;
 
-    if (gameOverCount >= 1) {
+    if (gameOverCount >= 3) {
+      playGameOverSfx();
       overlay.style.display = 'none';
       glassOverlay.style.display = 'flex';
       return;
