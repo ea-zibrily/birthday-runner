@@ -123,13 +123,13 @@
   const BEST_KEY = 'runner_best_score';
   let best = 0;
   try { best = parseInt(localStorage.getItem(BEST_KEY) || '0', 10) || 0; } catch(e) { best = 0; }
-  bestEl.textContent = 'BEST ' + best;
+  bestEl.textContent = 'SEKOR: ' + best;
 
   let score = 0;
-  let speed = 6;
-  const baseSpeed = 6;
+  let speed = 0;
   let elapsed = 0;
   let lastTime = 0;
+  const baseSpeed = 3;
 
   // player
   const player = {
@@ -308,15 +308,11 @@
       best = score;
       try { localStorage.setItem(BEST_KEY, String(best)); } catch(e) {}
     }
-    bestEl.textContent = 'BEST ' + best;
+    bestEl.textContent = 'SEKOR: ' + best;
     gameOverCount += 1;
 
-    if (gameOverCount >= 3) {
-      // Show the glass panel instead of the normal retry overlay.
+    if (gameOverCount >= 1) {
       overlay.style.display = 'none';
-      const finalScore = Math.floor(score);
-      document.getElementById('glass-sub').textContent =
-        gameOverCount + ' tries down — score ' + finalScore + '. Vibe to the music or jump back in.';
       glassOverlay.style.display = 'flex';
       return;
     }
