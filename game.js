@@ -76,9 +76,15 @@
     madridBGM.currentTime = 0;
     madridBGM.play();
   });
-
+  
   glassRestartBtn.addEventListener('click', (e) => {
     e.stopPropagation();
+
+    madridBGM.pause();
+    birthdayBGM.pause();
+    madridBGM.currentTime = 0;
+    birthdayBGM.currentTime = 0;
+
     glassOverlay.style.display = 'none';
     beginCountdown();
   });
