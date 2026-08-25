@@ -61,14 +61,20 @@
 
   birthdayAudioBtn.addEventListener('click', (e) => {
     e.stopPropagation();
+    madridBGM.pause();
+    madridBGM.currentTime = 0;
+
     birthdayBGM.currentTime = 0;
-    birthdayBGM.play().catch(() => {});
+    birthdayBGM.play();
   });
 
   madridAduioBtn.addEventListener('click', (e) => {
     e.stopPropagation();
+    birthdayBGM.pause();
+    birthdayBGM.currentTime = 0;
+
     madridBGM.currentTime = 0;
-    madridBGM.play().catch(() => {});
+    madridBGM.play();
   });
 
   glassRestartBtn.addEventListener('click', (e) => {
