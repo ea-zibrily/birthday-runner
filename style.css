@@ -23,6 +23,19 @@ canvas {
   text-shadow: 0 2px 6px rgba(0,0,0,0.4);
 }
 #best { opacity: 0.7; font-size: 14px; }
+#mute-btn {
+  pointer-events: auto;
+  background: rgba(255,255,255,0.12);
+  border: none; border-radius: 50%;
+  width: 38px; height: 38px;
+  font-size: 17px; line-height: 1;
+  color: #eaeaea; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0; box-shadow: none;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+#mute-btn:active { transform: scale(0.9); }
+#mute-btn.muted { opacity: 0.5; }
 #overlay {
   position: absolute; inset: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center;

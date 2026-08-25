@@ -7,6 +7,70 @@
   const bestEl = document.getElementById('best');
   const hint = document.getElementById('hint');
   const countdownEl = document.getElementById('countdown');
+  const muteBtn = document.getElementById('mute-btn');
+
+  // ---- Audio ----
+  // Replace these paths with your real audio files.
+  // MP3 for BGM (best compatibility for longer/looped audio).
+  // WAV for short SFX (zero decode latency vs mp3/ogg — snappier response).
+  const bgm = new Audio('assets/audio/bgm-theme.mp3');
+  bgm.loop = true;
+  bgm.volume = 0.4;
+
+  const jumpSfx = new Audio('assets/audio/jump.wav');
+  jumpSfx.volume = 0.7;
+  
+  const breakSfx = new Audio('assets/audio/break.wav');
+  breakSfx.volume = 0.7;
+
+  const MUTE_KEY = 'runner_muted';
+  let muted = false;
+  try { muted = localStorage.getItem(MUTE_KEY) === '1'; } catch(e) { muted = false; }
+  bgm.muted = muted;
+  jumpSfx.muted = muted;
+  updateMuteBtn();
+
+  function updateMuteBtn() {
+    muteBtn.textContent = muted ? '🔇' : '🔊';
+    muteBtn.classList.toggle('muted', muted);
+  }
+
+  function toggleMute() {
+    muted = !muted;
+    bgm.muted = muted;
+    jumpSfx.muted = muted;
+    try { localStorage.setItem(MUTE_KEY, muted ? '1' : '0'); } catch(e) {}
+    updateMuteBtn();
+  }
+  muteBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleMute();
+  });
+
+  let bgmStarted = false;
+  function startBgm() {
+    if (bgmStarted) return;
+
+    bgmStarted = true;
+    bgm.currentTime = 0;
+    bgm.play().catch(() => {
+      // Autoplay was blocked (rare once inside a gesture handler) — ignore.
+    });
+  }
+
+  function playJumpSfx() {
+    const sfx = jumpSfx.cloneNode();
+    sfx.volume = jumpSfx.volume;
+    sfx.muted = muted;
+    sfx.play().catch(() => {});
+  }
+
+  function playBreakSfx() {
+    const sfx = breakSfx.cloneNode();
+    sfx.volume = breakSfx.volume;
+    sfx.muted = muted;
+    sfx.play().catch(() => {});
+  }
 
   // ---- Canvas sizing ----
   let W, H, DPR;
@@ -50,8 +114,7 @@
     ducking: false,
     duckH: 26
   };
-
-  const GRAVITY = 0.5;
+  const GRAVITY = 0.75;
   const JUMP_V = -14.5;
 
   function groundTopY() { return groundY; }
@@ -122,6 +185,7 @@
     if (player.grounded) {
       player.vy = JUMP_V;
       player.grounded = false;
+      playJumpSfx();
     }
   }
 
@@ -180,6 +244,7 @@
   function beginCountdown() {
     if (state === STATE.COUNTDOWN) return;
     state = STATE.COUNTDOWN;
+    startBgm();
     reset();
     draw();
     startBtn.style.display = 'none';
@@ -211,6 +276,8 @@
 
   function gameOver() {
     state = STATE.DEAD;
+    bgm.pause();
+    bgmStarted = false;
     if (score > best) {
       best = score;
       try { localStorage.setItem(BEST_KEY, String(best)); } catch(e) {}
@@ -288,6 +355,7 @@
     const playerBox = { x: player.x + 6, y: player.y + 4, w: player.w - 12, h: player.h - 6 };
     for (const o of obstacles) {
       if (rectsOverlap(playerBox, o)) {
+        playBreakSfx();
         gameOver();
         return;
       }
